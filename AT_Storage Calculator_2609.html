@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>Storage Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            margin: 10px;
+        }
+
+        /* 主表格樣式與外圍黑框 */
+        table.main-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            text-align: center;
+            background-color: #fff;
+            border: 2px solid #000;
+        }
+
+        /* 內部儲存格白色分隔線 */
+        table.main-table th, 
+        table.main-table td {
+            border: 1px solid #fff;
+            padding: 6px 4px;
+        }
+
+        /* 表頭：黑底白字 */
+        th, .title-header {
+            background-color: #000 !important;
+            color: #fff !important;
+            font-weight: normal;
+        }
+
+        .title-header {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        /* 頁籤按鈕區域樣式 */
+        .tab-container {
+            background-color: #000;
+            padding: 4px 8px;
+            text-align: left;
+            border-left: 2px solid #000;
+            border-right: 2px solid #000;
+        }
+
+        .tab-button {
+            background-color: #e0e0e0;
+            color: #000;
+            border: 1px solid #777;
+            padding: 5px 40px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-right: 4px;
+            border-radius: 2px 2px 0 0;
+        }
+
+        .tab-button.active {
+            background-color: #ffffff;
+            border-bottom: 2px solid #ffffff;
+            color: #000;
+        }
+        
+        /* Copy button 樣式 */
+        .top-control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+        
+        .copy-button-container {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .copy-button {
+            background-color: #ffffff;
+            color: #000;
+            border: 1px solid #777;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 2px;
+        }
+        
+        .copy-button:hover {
+            background-color: #f0f0f0;
+        }
+        
+        /* 指定欄位固定寬度設定 */
+        .col-camera-type {
+        		width: 100px;
+        }	   
+        .col-res {
+            width: 130px;
+        }
+        .col-max-bitrate {
+            width: 120px;
+        }
+        .col-ch-bitrate {
+            width: 110px;
+        }
+
+        /* 資料列：灰白交錯 (奇數列灰底、偶數列白底) */
+        tbody tr:nth-child(odd) {
+            background-color: #c0c0c0;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #ffffff;
+        }
+
+        /* 下拉選單樣式 */
+        select {
+            width: 95%;
+            padding: 2px;
+            font-size: 12px;
+            border: 1px solid #777;
+            background-color: #fff;
+            color: #000;
+        }
+        select:disabled {
+            background-color: #e9ecef;
+            color: #6c757d;
+            cursor: not-allowed;
+        }
+
+        /* 底部 HDD 統計表格樣式 */
+        .summary-table {
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 8px;
+            border: 2px solid #000;
+            background-color: #ffffff;
+        }
+
+        .summary-table td {
+            border: 1px solid #000;
+            padding: 4px 8px;
+            height: 24px;
+            box-sizing: border-box;
+        }
+
+        .summary-table td.bg-gray {
+            background-color: #c0c0c0;
+            color: #000;
+            font-weight: normal;
+            white-space: nowrap;
+        }
+
+        .summary-table td.bg-white {
+            background-color: #ffffff;
+            text-align: center;
+        }
+
+        .summary-table td.few-days-label {
+            background-color: #c0c0c0;
+            text-align: center;
+            vertical-align: middle;
+            font-weight: bold;
+            font-size: 20px;
+            padding-left: 8px;
+            padding-right: 25px;
+        }
+
+        .hdd-input {
+            width: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+            font-size: 13px;
+            text-align: center;
+            font-family: inherit;
+        }
+        
+				.summary-table td.few-days-value {
+						vertical-align: middle;
+				    font-size: 20px;
+				    font-weight: bold;
+				    color: #000;
+				    text-align: center;
+				}
+        
+        /* Popup Background */
+				.modal {
+				    display: none;
+				    position: fixed;
+				    z-index: 9999;
+				    left: 0;
+				    top: 0;
+				    width: 100%;
+				    height: 100%;
+				    background-color: rgba(0,0,0,0.65);
+				    justify-content: center;
+				    align-items: center;
+				}
+				
+				/* Popup Window */
+				.modal-content {
+				    background-color: #ffffff;
+				    width: 700px;
+				    max-width: 85%;
+				    padding: 25px;
+				    border: 3px solid #000;
+				    border-radius: 6px;
+				    box-shadow: 0 0 15px rgba(0,0,0,0.4);
+				}
+				
+				.modal-content h2 {
+				    margin-top: 0;
+				    text-align: center;
+				    font-size: 24px;
+				    color: #000;
+				}
+				
+				.modal-content p {
+				    font-size: 14px;
+				    line-height: 1.6;
+				    margin-bottom: 20px;
+				}
+				
+				/* Confirm Button */
+				.confirm-button {
+				    display: block;
+				    margin: 20px auto 0;
+				    padding: 10px 40px;
+				    font-size: 16px;
+				    font-weight: bold;
+				    background-color: #000;
+				    color: #fff;
+				    border: none;
+				    cursor: pointer;
+				    border-radius: 4px;
+				}
+				
+				.confirm-button:hover {
+				    background-color: #333;
+				}
+        
+    </style>
+</head>
+<body>
+
+		<!-- Note Popup -->
+		<div id="noteModal" class="modal">
+		
+		    <div class="modal-content">
+		
+		        <h2>NOTE</h2>
+		
+		        <p>
+		            <b>Note 1:</b><br>
+		            The recording table is for reference only.<br>
+		            The video varies based on the different scenario,
+		            which have the impact on the number of the recording days.
+		        </p>
+		
+		        <p>
+		            <b>Note 2:</b><br>
+		            According to HDD supplier, the real HDD recording capacity
+		            will be 90% of the total capacity.<br>
+		            For example, the recorded capacity for 2TB is 1.8TB.<br>
+		            Please use this suggested parameter to calculate the total recording days.
+		        </p>
+		
+		        <p>
+		            <b>Note 3:</b><br>
+		            The audio recording data rate is 8kbps.<br>
+		            1 Kbps to Mbps = 0.001 Mbps.<br>
+		            It might not be taken into considered as a factor in the recording table.
+		        </p>
+		
+		        <button
+		            type="button"
+		            class="confirm-button"
+		            onclick="closeNote()">
+		            Confirm
+		        </button>
+		
+		    </div>
+		
+		</div>
+
+
+<table class="main-table">
+    <thead>
+        <!-- Title Row -->
+        <tr>
+            <th colspan="14" class="title-header">Storage Calculator</th>
+        </tr>
+        
+        <!-- Tab + Copy Button Row -->
+        <tr>
+            <td colspan="14" class="tab-container">
+                <div class="top-control-row">
+
+                    <!-- Left : Channel Tabs -->
+                    <div>
+                        <button
+                            type="button"
+                            class="tab-button active"
+                            onclick="switchTab('group1')">
+                            CH 01 - CH 16
+                        </button>
+
+                        <button
+                            type="button"
+                            class="tab-button"
+                            onclick="switchTab('group2')">
+                            CH 17 - CH 32
+                        </button>
+                    </div>
+
+                    <!-- Right : Copy Buttons -->
+                    <div class="copy-button-container">
+                        <button
+                            type="button"
+                            class="copy-button"
+                            onclick="copyChannelSettings(1, 2, 16)">
+                            CH 01 Copy to CH 02 - CH 16
+                        </button>
+
+                        <button
+                            type="button"
+                            class="copy-button"
+                            onclick="copyChannelSettings(17, 18, 32)">
+                            CH 17 Copy to CH 18 - CH 32
+                        </button>
+                    </div>
+
+                </div>
+            </td>
+        </tr>
+                
+        <!-- Main Header Row 1 -->
+        <tr>
+            <th rowspan="2">CH ID</th>
+            <th rowspan="2">Enabled</th>
+            <th rowspan="2" class="col-camera-type">Camera Type</th>
+            <th colspan="5">Main Profile</th>
+            <th colspan="5">Sub Profile</th>
+            <th rowspan="2" class="col-ch-bitrate">CH Bitrate</th>
+        </tr>
+        
+        <!-- Main Header Row 2 -->
+        <tr>
+            <th>Bitrate Type</th>
+            <th class="col-res">Resolution</th>
+            <th>Frame Rate</th>
+            <th>Quality</th>
+            <th class="col-max-bitrate">Max Bitrate</th>
+            <th>Bitrate Type</th>
+            <th class="col-res">Resolution</th>
+            <th>Frame Rate</th>
+            <th>Quality</th>
+            <th class="col-max-bitrate">Max Bitrate</th>
+        </tr>
+    </thead>
+    <!-- 分為兩組 tbody 分頁內容 -->
+    <tbody id="calculator-body-group1">
+        <!-- JavaScript 生成 CH 01 ~ CH 16 數據列 -->
+    </tbody>
+    <tbody id="calculator-body-group2" style="display: none;">
+        <!-- JavaScript 生成 CH 17 ~ CH 32 數據列 -->
+    </tbody>
+</table>
+
+<!-- 最下方 HDD 容量計算表格 -->
+<table class="summary-table">
+    <tr>
+        <td class="bg-gray" style="width: 140px;">HDD Storage Size</td>
+        <td class="bg-white" style="width: 150px;">
+            <input type="number" id="hdd-size" class="hdd-input" value="6000" min="0" step="100">
+        </td>
+        <td class="bg-gray" style="width: 50px;">GB</td>
+        <td rowspan="2" class="few-days-label">Few days</td>
+        <td rowspan="2" class="few-days-value" id="few-days" style="width: 200px; vertical-align: middle;">0</td>
+        <td rowspan="2" class="few-days-label">Days</td>
+    </tr>
+    <tr>
+        <td class="bg-gray">1 Day Total need</td>
+        <td class="bg-white" id="one-day-total">0</td>
+        <td class="bg-gray">GB</td>
+    </tr>
+</table>
+
+<script>
+// ---------- 資料與選單定義 ----------
+const cameraTypes = ["8MP15", "8MP12", "8MP07", "5MP20", "5MP12", "4MP30", "4MP25", "4MP15", "1080P30", "1080P25", "D1_30", "D1_25"];
+
+// Analog 下拉選項
+const resolutionMap = {
+    "8MP15": { options: ["8M", "5M", "4M", "1920x1080 FHD", "1280x720 HD", "960x540 QFHD", "640x360 NFHD", "480x270 HFHD"], default: "1920x1080 FHD" },
+    "8MP12": { options: ["8M", "5M", "4M", "1920x1080 FHD", "1280x720 HD", "960x540 QFHD", "640x360 NFHD", "480x270 HFHD"], default: "1920x1080 FHD" },
+    "8MP07": { options: ["8M", "5M", "4M", "1920x1080 FHD", "1280x720 HD", "960x540 QFHD", "640x360 NFHD", "480x270 HFHD"], default: "1920x1080 FHD" },
+    "5MP20": { options: ["5M", "4M", "1920x1080 FHD", "1280x720 HD", "960x540 QFHD", "640x360 NFHD", "480x270 HFHD"], default: "1920x1080 FHD" },
+    "5MP12": { options: ["5M", "4M", "2560x1440 WQHD", "1920x1080 FHD", "1280x720 HD", "960x540 QFHD", "640x360 NFHD", "480x270 HFHD"], default: "1920x1080 FHD" },
+    "4MP30": { options: ["4M", "1920x1080 FHD", "1280x720 HD", "960x540 QFHD", "640x360 NFHD", "480x270 HFHD"], default: "1920x1080 FHD" },
+    "4MP25": { options: ["4M", "1920x1080 FHD", "1280x720 HD", "960x540 QFHD", "640x360 NFHD", "480x270 HFHD"], default: "1920x1080 FHD" },
+    "4MP15": { options: ["4M", "1920x1080 FHD", "1280x720 HD", "960x540 QFHD", "640x360 NFHD", "480x270 HFHD"], default: "1920x1080 FHD" },
+    "1080P30": { options: ["1920x1080 FHD", "1280x720 HD", "960x540 QFHD", "640x360 NFHD", "480x270 HFHD"], default: "1920x1080 FHD" },
+    "1080P25": { options: ["1920x1080 FHD", "1280x720 HD", "960x540 QFHD", "640x360 NFHD", "480x270 HFHD"], default: "1920x1080 FHD" },
+    "D1_30": { options: ["960x480 960H", "960x240 H960H", "480x240 Q960H"], default: "960x480 960H" },
+    "D1_25": { options: ["960x480 960H", "960x240 H960H", "480x240 Q960H"], default: "960x480 960H" }
+};
+
+const frameRateConfigMap = {
+    "8M": { max: 7, default: 7 },
+    "5M": { max: 12, default: 12 },
+    "4M": { max: 15, default: 15 },
+    "1920x1080 FHD": { max: 30, default: 15 },
+    "1280x720 HD": { max: 30, default: 15 },
+    "960x540 QFHD": { max: 30, default: 15 },
+    "640x360 NFHD": { max: 30, default: 15 },
+    "480x270 HFHD": { max: 30, default: 15 },
+    "960x480 960H": { max: 30, default: 15 },
+    "960x240 H960H": { max: 30, default: 15 },
+    "480x240 Q960H": { max: 30, default: 15 }
+};
+
+const qualityOptions = ["L1", "L2", "L3", "L4", "L5", "L6", "L7", "L8", "L9", "L10"];
+const subResolutionOptions = ["640x360 NFHD", "480x270 HFHD"];
+
+// IPC 專用選單內容
+const ipcMainResOptions = ["2592X1944", "2560x1440", "2304X1296", "1920X1080", "1280X720"];
+const ipcMainResDefault = "1920X1080";
+
+const ipcSubResOptions = ["640X360", "480X270", "320x180"];
+const ipcSubResDefault = "640X360";
+
+const ipcFpsOptions = Array.from({ length: 30 }, (_, i) => i + 1);
+const ipcFpsDefault = 30;
+
+const ipcMainBitrateOptions = [256, 512, 1024, 1536, 2048, 2560, 3072, 3584, 4096, 5120, 6144];
+const ipcMainBitrateDefault = 3072;
+
+const ipcSubBitrateOptions = [128, 256, 512, 1024, 1536, 2048];
+const ipcSubBitrateDefault = 512;
+
+// Analog 算式對照表
+const resBitrateMap = {
+    "8M": 11 * 1024, 
+    "5M": 10 * 1024, 
+    "4M": 9 * 1024,
+    "1920x1080 FHD": 8 * 1024, 
+    "1280x720 HD": 4 * 1024, 
+    "960x540 QFHD": 2 * 1024,
+    "640x360 NFHD": 1.5 * 1024, 
+    "480x270 HFHD": 1 * 1024,
+    "960x480 960H": 2 * 1024, 
+    "960x240 H960H": 1 * 1024, 
+    "480x240 Q960H": 0.5 * 1024
+};
+
+const bitrateTypeMap = {
+	 "CBR": 1, 
+	 "VBR": 0.9 
+};
+	 
+const rowChBitrateMap = {};
+
+// 全域儲存每一個 Channel TR 元素的對照表
+const channelRowMap = {};
+
+// ---------- 頁籤切換 ----------
+function switchTab(groupName) {
+    const group1 = document.getElementById('calculator-body-group1');
+    const group2 = document.getElementById('calculator-body-group2');
+    const buttons = document.querySelectorAll('.tab-button');
+
+    if (groupName === 'group1') {
+        group1.style.display = '';
+        group2.style.display = 'none';
+        buttons[0].classList.add('active');
+        buttons[1].classList.remove('active');
+    } else {
+        group1.style.display = 'none';
+        group2.style.display = '';
+        buttons[0].classList.remove('active');
+        buttons[1].classList.add('active');
+    }
+}
+
+// ---------- 複製功能 ----------
+function copyChannelSettings(srcChIndex, startChIndex, endChIndex) {
+    const srcRow = channelRowMap[srcChIndex];
+    if (!srcRow) return;
+
+    // 取得來源頻道的控制項
+    const srcEnabled = srcRow.querySelector('.enabled').value;
+    const srcCamera = srcRow.querySelector('.camera-type').value;
+    const srcMainBitrateType = srcRow.querySelector('.main-bitrate-type').value;
+    const srcMainRes = srcRow.querySelector('.main-resolution').value;
+    const srcMainFps = srcRow.querySelector('.main-framerate').value;
+    const srcMainQuality = srcRow.querySelector('.main-quality').value;
+    const srcMainMax = srcRow.querySelector('.main-max-bitrate').value;
+
+    const srcSubBitrateType = srcRow.querySelector('.sub-bitrate-type').value;
+    const srcSubRes = srcRow.querySelector('.sub-resolution').value;
+    const srcSubFps = srcRow.querySelector('.sub-framerate').value;
+    const srcSubQuality = srcRow.querySelector('.sub-quality').value;
+    const srcSubMax = srcRow.querySelector('.sub-max-bitrate').value;
+
+    // 逐一複製給目標頻道
+    for (let i = startChIndex; i <= endChIndex; i++) {
+        const targetRow = channelRowMap[i];
+        if (!targetRow) continue;
+
+        // 1. 設定 Enabled 狀態並驅動對應選單與 UI 狀態變化
+        const targetEnabled = targetRow.querySelector('.enabled');
+        targetEnabled.value = srcEnabled;
+        onEnableChange(targetRow);
+
+        // 如果是 Disabled 狀態，就無須填寫其餘內容，已自動由 onEnableChange 處理完畢
+        if (srcEnabled === 'Disabled') continue;
+
+        // 2. 複製 Camera Type 並更新 Resolution
+        if (srcEnabled === 'Analog') {
+            targetRow.querySelector('.camera-type').value = srcCamera;
+            updateResolution(targetRow, false);
+        }
+
+        // 3. 複製 Main Profile
+        targetRow.querySelector('.main-bitrate-type').value = srcMainBitrateType;
+        if (srcEnabled === 'Analog') {
+            syncSubBitrateType(targetRow, false);
+        }
+
+        targetRow.querySelector('.main-resolution').value = srcMainRes;
+        if (srcEnabled === 'Analog') {
+            updateFrameRate(targetRow, false);
+        }
+
+        targetRow.querySelector('.main-framerate').value = srcMainFps;
+        if (srcEnabled === 'Analog') {
+            syncSubFrameRate(targetRow, false);
+        }
+
+        targetRow.querySelector('.main-quality').value = srcMainQuality;
+        if (srcEnabled === 'Analog') {
+            syncSubQuality(targetRow, false);
+        }
+
+        targetRow.querySelector('.main-max-bitrate').value = srcMainMax;
+
+        // 4. 複製 Sub Profile
+        targetRow.querySelector('.sub-bitrate-type').value = srcSubBitrateType;
+        targetRow.querySelector('.sub-resolution').value = srcSubRes;
+        targetRow.querySelector('.sub-framerate').value = srcSubFps;
+        targetRow.querySelector('.sub-quality').value = srcSubQuality;
+        targetRow.querySelector('.sub-max-bitrate').value = srcSubMax;
+
+        // 5. 重新計算當前 Channel 的 Bitrate 與底欄統計
+        updateRowCalculations(targetRow);
+    }
+}
+
+// ---------- 輔助工具函式 ----------
+function populateSelect(selectElem, options, defaultValue, isKbps = false) {
+    selectElem.innerHTML = '';
+    options.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt;
+        if (isKbps) {
+            option.textContent = `${opt} kbps`;
+        } else if (typeof opt === 'number') {
+            option.textContent = `${opt} fps`;
+        } else {
+            option.textContent = opt;
+        }
+        if (opt === defaultValue || opt == defaultValue) option.selected = true;
+        selectElem.appendChild(option);
+    });
+}
+
+function formatBitrate(value) {
+    const formattedNum = Math.round(value * 10) / 10;
+    return `${formattedNum} Kbps`;
+}
+
+function formatDecimal(value) {
+    return Math.round(value * 10) / 10;
+}
+
+function calculateAnalogMaxBitrate(resolution, fpsStr, qualityStr, cameraTypeStr, bitrateTypeStr) {
+    const resBitrate = resBitrateMap[resolution] || 0;
+    const fpsVal = parseInt(fpsStr, 10) || 0;
+    const fps = fpsVal * 1;
+    
+    const qualityVal = parseInt((qualityStr || '').replace(/[^\d]/g, ''), 10) || 0;
+    const quality = qualityVal;
+    
+    const cameraMatch = cameraTypeStr.match(/\d+$/);
+    const cameraMaxFpsVal = cameraMatch ? parseInt(cameraMatch[0], 10) : 0;
+    const cameraMaxFps = cameraMaxFpsVal * 1;
+    
+    const bitrateType = bitrateTypeMap[bitrateTypeStr] || 0;
+    
+    const analog_calculator_bitrate = (((resBitrate/4) + ((fps -1) * (resBitrate*3/4) / (cameraMaxFps -1))) * (quality /10)) * bitrateType ;
+    
+    return analog_calculator_bitrate;
+}
+
+// ---------- UI 狀態切換與控制 ----------
+function onEnableChange(row) {
+    const enabledState = row.querySelector('.enabled').value;
+
+    const cameraSelect = row.querySelector('.camera-type');
+    const mainBitrateType = row.querySelector('.main-bitrate-type');
+    const mainResSelect = row.querySelector('.main-resolution');
+    const mainFpsSelect = row.querySelector('.main-framerate');
+    const mainQualitySelect = row.querySelector('.main-quality');
+    const mainMaxText = row.querySelector('.main-max-text');
+    const mainMaxSelect = row.querySelector('.main-max-bitrate');
+
+    const subBitrateType = row.querySelector('.sub-bitrate-type');
+    const subResSelect = row.querySelector('.sub-resolution');
+    const subFpsSelect = row.querySelector('.sub-framerate');
+    const subQualitySelect = row.querySelector('.sub-quality');
+    const subMaxText = row.querySelector('.sub-max-text');
+    const subMaxSelect = row.querySelector('.sub-max-bitrate');
+
+    if (enabledState === "IPC") {
+        // --- IPC 模式 ---
+        populateSelect(cameraSelect, ["IP Camera"], "IP Camera");
+        cameraSelect.disabled = true;
+
+        mainBitrateType.disabled = false;
+        mainResSelect.disabled = false;
+        mainFpsSelect.disabled = false;
+        
+        populateSelect(mainQualitySelect, qualityOptions, "L7");
+        mainQualitySelect.disabled = true;
+        
+        mainMaxSelect.disabled = false;
+
+        subBitrateType.disabled = false;
+        subResSelect.disabled = false;
+        subFpsSelect.disabled = false;
+        
+        populateSelect(subQualitySelect, qualityOptions, "L7");
+        subQualitySelect.disabled = true;
+        
+        subMaxSelect.disabled = false;
+
+        mainMaxText.style.display = 'none';
+        mainMaxSelect.style.display = 'inline-block';
+        subMaxText.style.display = 'none';
+        subMaxSelect.style.display = 'inline-block';
+
+        populateSelect(mainResSelect, ipcMainResOptions, ipcMainResDefault);
+        populateSelect(mainFpsSelect, ipcFpsOptions, ipcFpsDefault);
+        populateSelect(mainMaxSelect, ipcMainBitrateOptions, ipcMainBitrateDefault, true);
+
+        populateSelect(subBitrateType, ["CBR", "VBR"], mainBitrateType.value || "CBR");
+        populateSelect(subResSelect, ipcSubResOptions, ipcSubResDefault);
+        populateSelect(subFpsSelect, ipcFpsOptions, ipcFpsDefault);
+        populateSelect(subMaxSelect, ipcSubBitrateOptions, ipcSubBitrateDefault, true);
+
+    } else if (enabledState === "Analog") {
+        // --- Analog 模式 ---
+        cameraSelect.disabled = false;
+        mainBitrateType.disabled = false;
+        mainResSelect.disabled = false;
+        mainFpsSelect.disabled = false;
+        mainQualitySelect.disabled = false;
+        subResSelect.disabled = false;
+
+        subBitrateType.disabled = true;
+        subFpsSelect.disabled = true;
+        subQualitySelect.disabled = true;
+
+        populateSelect(cameraSelect, cameraTypes, "1080P30");
+
+        mainMaxText.style.display = 'inline-block';
+        mainMaxSelect.style.display = 'none';
+        subMaxText.style.display = 'inline-block';
+        subMaxSelect.style.display = 'none';
+
+        populateSelect(subResSelect, subResolutionOptions, "480x270 HFHD");
+        populateSelect(mainQualitySelect, qualityOptions, "L7");
+
+        updateResolution(row, false);
+        syncSubBitrateType(row, false);
+        syncSubQuality(row, false);
+
+    } else {
+        // --- Disabled 模式 ---
+        mainMaxText.style.display = 'inline-block';
+        mainMaxSelect.style.display = 'none';
+        subMaxText.style.display = 'inline-block';
+        subMaxSelect.style.display = 'none';
+
+        const selects = row.querySelectorAll('select:not(.enabled)');
+        selects.forEach(s => s.disabled = true);
+    }
+
+    updateRowCalculations(row);
+}
+
+function updateResolution(row, triggerCalc = true) {
+    const enabledState = row.querySelector('.enabled').value;
+    if (enabledState !== "Analog") return;
+
+    const cameraType = row.querySelector('.camera-type').value;
+    const resSelect = row.querySelector('.main-resolution');
+    const config = resolutionMap[cameraType] || { options: ["1920x1080 FHD"], default: "1920x1080 FHD" };
+    
+    populateSelect(resSelect, config.options, config.default);
+    updateFrameRate(row, triggerCalc);
+}
+
+function updateFrameRate(row, triggerCalc = true) {
+    const enabledState = row.querySelector('.enabled').value;
+    if (enabledState !== "Analog") return;
+
+    const resolution = row.querySelector('.main-resolution').value;
+    const mainFpsSelect = row.querySelector('.main-framerate');
+    const config = frameRateConfigMap[resolution] || { max: 30, default: 15 };
+    
+    const fpsOptions = Array.from({ length: config.max }, (_, i) => i + 1);
+    populateSelect(mainFpsSelect, fpsOptions, config.default);
+    
+    syncSubFrameRate(row, triggerCalc);
+}
+
+function syncSubBitrateType(row, triggerCalc = true) {
+    const enabledState = row.querySelector('.enabled').value;
+    if (enabledState !== "Analog") return;
+
+    const mainValue = row.querySelector('.main-bitrate-type').value;
+    const subSelect = row.querySelector('.sub-bitrate-type');
+    populateSelect(subSelect, ["CBR", "VBR"], mainValue);
+    if (triggerCalc) updateRowCalculations(row);
+}
+
+function syncSubFrameRate(row, triggerCalc = true) {
+    const enabledState = row.querySelector('.enabled').value;
+    if (enabledState !== "Analog") return;
+
+    const mainFpsSelect = row.querySelector('.main-framerate');
+    const subFpsSelect = row.querySelector('.sub-framerate');
+    
+    const currentOptions = Array.from(mainFpsSelect.options).map(opt => parseInt(opt.value));
+    const currentValue = parseInt(mainFpsSelect.value);
+    
+    populateSelect(subFpsSelect, currentOptions, currentValue);
+    if (triggerCalc) updateRowCalculations(row);
+}
+
+function syncSubQuality(row, triggerCalc = true) {
+    const enabledState = row.querySelector('.enabled').value;
+    if (enabledState !== "Analog") return;
+
+    const mainValue = row.querySelector('.main-quality').value;
+    const subSelect = row.querySelector('.sub-quality');
+    populateSelect(subSelect, qualityOptions, mainValue);
+    if (triggerCalc) updateRowCalculations(row);
+}
+
+// ---------- 核心計算邏輯 ----------
+function updateRowCalculations(row) {
+    const chId = row.children[0].textContent;
+    const enabledState = row.querySelector('.enabled').value;
+
+    let mainMaxBitrate = 0;
+    let subMaxBitrate = 0;
+    let chBitrate = 0;
+
+    const mainMaxText = row.querySelector('.main-max-text');
+    const subMaxText = row.querySelector('.sub-max-text');
+    const chBitrateCell = row.children[13];
+
+    const mainMaxSelect = row.querySelector('.main-max-bitrate');
+    const subMaxSelect = row.querySelector('.sub-max-bitrate');
+
+    if (enabledState === "Disabled") {
+        mainMaxBitrate = 0;
+        subMaxBitrate = 0;
+        chBitrate = 0;
+
+        mainMaxText.textContent = formatBitrate(0);
+        subMaxText.textContent = formatBitrate(0);
+        chBitrateCell.textContent = formatBitrate(0);
+
+    } else if (enabledState === "IPC") {
+        mainMaxBitrate = parseInt(mainMaxSelect.value, 10) || 0;
+        subMaxBitrate = parseInt(subMaxSelect.value, 10) || 0;
+        chBitrate = mainMaxBitrate + subMaxBitrate;
+
+        chBitrateCell.textContent = formatBitrate(chBitrate);
+
+    } else {
+        const cameraType = row.querySelector('.camera-type').value;
+        const mainBitrateType = row.querySelector('.main-bitrate-type').value;
+        const mainRes = row.querySelector('.main-resolution').value;
+        const mainFps = row.querySelector('.main-framerate').value;
+        const mainQuality = row.querySelector('.main-quality').value;
+
+        mainMaxBitrate = calculateAnalogMaxBitrate(mainRes, mainFps, mainQuality, cameraType, mainBitrateType);
+        mainMaxText.textContent = formatBitrate(mainMaxBitrate);
+
+        const subBitrateType = row.querySelector('.sub-bitrate-type').value;
+        const subRes = row.querySelector('.sub-resolution').value;
+        const subFps = row.querySelector('.sub-framerate').value;
+        const subQuality = row.querySelector('.sub-quality').value;
+
+        subMaxBitrate = calculateAnalogMaxBitrate(subRes, subFps, subQuality, cameraType, subBitrateType);
+        subMaxText.textContent = formatBitrate(subMaxBitrate);
+
+        chBitrate = mainMaxBitrate + subMaxBitrate;
+        chBitrateCell.textContent = formatBitrate(chBitrate);
+    }
+
+    rowChBitrateMap[chId] = chBitrate;
+    updateSummaryTable();
+}
+
+function updateSummaryTable() {
+    let totalChBitrate = 0;
+    for (const chId in rowChBitrateMap) {
+        totalChBitrate += rowChBitrateMap[chId] || 0;
+    }
+
+    const oneDayGb = (totalChBitrate * 86400) / 8 / 1000000;
+    document.getElementById('one-day-total').textContent = formatDecimal(oneDayGb);
+
+    const hddInput = document.getElementById('hdd-size');
+    let hddSize = parseFloat(hddInput.value);
+    
+    if (isNaN(hddSize) || hddSize <= 0) {
+        hddSize = 1;
+    }
+
+    let fewDays = 0;
+    if (oneDayGb > 0) {
+        fewDays = (hddSize * 0.89) / oneDayGb;
+    }
+    document.getElementById('few-days').textContent = formatDecimal(fewDays);
+}
+
+// ---------- 初始化 DOM 與 DOM 事件動態綁定 ----------
+function createRow(i) {
+    const chId = `CH ${i.toString().padStart(2, '0')}`;
+    const tr = document.createElement('tr');
+    
+    let enabledOptionsHTML = '';
+    if (i <= 16) {
+        enabledOptionsHTML = `
+            <option value="Analog" selected>Analog</option>
+            <option value="IPC">IPC</option>
+            <option value="Disabled">Disabled</option>
+        `;
+    } else {
+        enabledOptionsHTML = `
+            <option value="IPC">IPC</option>
+            <option value="Disabled" selected>Disabled</option>
+        `;
+    }
+
+    tr.innerHTML = `
+        <td>${chId}</td>
+        <td>
+            <select class="enabled">
+                ${enabledOptionsHTML}
+            </select>
+        </td>
+        <td>
+            <select class="camera-type"></select>
+        </td>
+        <td>
+            <select class="main-bitrate-type">
+                <option value="CBR" selected>CBR</option>
+                <option value="VBR">VBR</option>
+            </select>
+        </td>
+        <td><select class="main-resolution"></select></td>
+        <td><select class="main-framerate"></select></td>
+        <td><select class="main-quality"></select></td>
+        <td>
+            <span class="main-max-text">${formatBitrate(0)}</span>
+            <select class="main-max-bitrate" style="display:none;"></select>
+        </td>
+        <td><select class="sub-bitrate-type" disabled></select></td>
+        <td><select class="sub-resolution"></select></td>
+        <td><select class="sub-framerate" disabled></select></td>
+        <td><select class="sub-quality" disabled></select></td>
+        <td>
+            <span class="sub-max-text">${formatBitrate(0)}</span>
+            <select class="sub-max-bitrate" style="display:none;"></select>
+        </td>
+        <td></td><!-- CH Bitrate -->
+    `;
+
+    // 初始 Analog 下拉選項設定
+    const cameraSelect = tr.querySelector('.camera-type');
+    populateSelect(cameraSelect, cameraTypes, "1080P30");
+
+    const mainQualitySelect = tr.querySelector('.main-quality');
+    populateSelect(mainQualitySelect, qualityOptions, "L7");
+
+    const subResSelect = tr.querySelector('.sub-resolution');
+    populateSelect(subResSelect, subResolutionOptions, "480x270 HFHD");
+
+    // 預設自動同步與載入 Sub Profile 預設值
+    syncSubBitrateType(tr, false);
+    syncSubQuality(tr, false);
+
+    // 事件監聽
+    const enabledSelect = tr.querySelector('.enabled');
+    const mainResSelect = tr.querySelector('.main-resolution');
+    const mainBitrateSelect = tr.querySelector('.main-bitrate-type');
+    const mainFpsSelect = tr.querySelector('.main-framerate');
+    const mainMaxBitrateSelect = tr.querySelector('.main-max-bitrate');
+    const subMaxBitrateSelect = tr.querySelector('.sub-max-bitrate');
+
+    enabledSelect.addEventListener('change', () => onEnableChange(tr));
+    
+    cameraSelect.addEventListener('change', () => {
+        updateResolution(tr);
+        updateRowCalculations(tr);
+    });
+
+    mainResSelect.addEventListener('change', () => {
+        if (enabledSelect.value === "Analog") updateFrameRate(tr);
+        updateRowCalculations(tr);
+    });
+
+    mainBitrateSelect.addEventListener('change', () => {
+        if (enabledSelect.value === "Analog") syncSubBitrateType(tr);
+        updateRowCalculations(tr);
+    });
+
+    mainFpsSelect.addEventListener('change', () => {
+        if (enabledSelect.value === "Analog") syncSubFrameRate(tr);
+        updateRowCalculations(tr);
+    });
+
+    mainQualitySelect.addEventListener('change', () => {
+        if (enabledSelect.value === "Analog") syncSubQuality(tr);
+        updateRowCalculations(tr);
+    });
+
+    subResSelect.addEventListener('change', () => updateRowCalculations(tr));
+    mainMaxBitrateSelect.addEventListener('change', () => updateRowCalculations(tr));
+    subMaxBitrateSelect.addEventListener('change', () => updateRowCalculations(tr));
+
+    // 執行初始化 UI 狀態
+    onEnableChange(tr);
+
+    // 註冊至全域 Channel Row 映射字典
+    channelRowMap[i] = tr;
+
+    return tr;
+}
+
+// 建立頻道列表
+const tbodyGroup1 = document.getElementById('calculator-body-group1');
+const tbodyGroup2 = document.getElementById('calculator-body-group2');
+
+for (let i = 1; i <= 16; i++) {
+    tbodyGroup1.appendChild(createRow(i));
+}
+
+for (let i = 17; i <= 32; i++) {
+    tbodyGroup2.appendChild(createRow(i));
+}
+
+// HDD 輸入框控制
+const hddInput = document.getElementById('hdd-size');
+hddInput.addEventListener('input', updateSummaryTable);
+hddInput.addEventListener('change', () => {
+    let val = parseFloat(hddInput.value);
+    if (isNaN(val) || val <= 0) {
+        hddInput.value = 1;
+    }
+    updateSummaryTable();
+});
+
+//Modal Popup
+window.addEventListener('load', function () {
+    if (!sessionStorage.getItem('noteConfirmed')) {
+        const modal = document.getElementById('noteModal');
+        modal.style.display = 'flex';
+    }
+});
+
+function closeNote() {
+    sessionStorage.setItem(
+        'noteConfirmed',
+        'true'
+    );
+    document.getElementById('noteModal').style.display = 'none';
+}
+
+</script>
+
+</body>
+</html>
